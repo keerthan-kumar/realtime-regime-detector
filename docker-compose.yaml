@@ -1,0 +1,25 @@
+services:
+  generator:
+    build:
+      context: ./generator
+    container_name: regime-generator
+    volumes:
+      - ./data:/data
+    environment:
+      - DB_PATH=/data/events.db
+    restart: unless-stopped
+    depends_on: []
+
+  detector:
+    build:
+      context: ./detector
+    container_name: regime-detector
+    volumes:
+      - ./data:/data
+    environment:
+      - DB_PATH=/data/events.db
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    depends_on:
+      - generator
