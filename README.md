@@ -32,25 +32,26 @@ streams where attacks persist over multiple ticks rather than appearing
 as isolated spikes.
 ---
 
-## Project Structure
+## 📂 Project Structure
+
+```bash
 realtime-regime-detector/
 ├── docker-compose.yaml
-├── data/                        # shared SQLite volume
+├── data/                     # shared SQLite volume
 ├── generator/
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   └── simulate.py              # live stream simulation
-└── detector/
-├── Dockerfile
-├── requirements.txt
-├── main.py                  # FastAPI endpoints
-├── engine/
-│   ├── hmm_model.py         # HMM lifecycle management
-│   └── detector.py          # background detection loop
-└── db/
-└── database.py          # SQLite read/write layer
-
----
+│   └── simulate.py          # live stream simulation
+├── detector/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── main.py              # FastAPI endpoints
+│   ├── engine/
+│   │   ├── hmm_model.py     # HMM lifecycle management
+│   │   └── detector.py      # background detection loop
+│   └── db/
+│       └── database.py      # SQLite read/write layer
+```
 
 ## Quick Start
 
