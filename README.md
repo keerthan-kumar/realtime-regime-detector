@@ -7,11 +7,15 @@ states using a **2-state Gaussian Hidden Markov Model (HMM)**.
 ---
 
 ## Architecture
+## 🏗️ Architecture
+
+```text
 [Generator Container] → writes events → [SQLite /data/events.db]
-↓
+                      ↓
 [Detector Container]  → reads events → [HMM Engine] → [FastAPI]
-↓
+                      ↓
 [Detections Table]
+```
 
 ### Why HMM?
 A Hidden Markov Model is the statistically correct choice for regime detection
