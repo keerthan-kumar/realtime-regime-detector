@@ -7,14 +7,21 @@ states using a **2-state Gaussian Hidden Markov Model (HMM)**.
 ---
 
 ## Architecture
-## 🏗️ Architecture
 
 ```text
-[Generator Container] → writes events → [SQLite /data/events.db]
-                      ↓
-[Detector Container]  → reads events → [HMM Engine] → [FastAPI]
-                      ↓
-[Detections Table]
+[Generator Container]
+         │
+         ▼
+   (writes events)
+         │
+         ▼
+[SQLite /data/events.db]
+         │
+         ▼
+   (reads events)
+         │
+         ▼
+[Detector Container] ──→ [HMM Engine] ──→ [FastAPI] ──→ [Detections Table]
 ```
 
 ### Why HMM?
