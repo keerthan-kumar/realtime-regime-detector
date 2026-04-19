@@ -137,27 +137,27 @@ Returns current regime state with full uncertainty metrics.
 ```json
 {
   "status": "ok",
-  "timestamp": "2026-04-18T08:04:25.827761",
+  "timestamp": "2026-04-19T11:35:50.662238",
   "detection": {
-    "current_state": "ATTACK",
-    "alert_level": "CRITICAL",
-    "current_value": 22.4821,
+    "current_state": "NORMAL",
+    "alert_level": "NORMAL",
+    "current_value": 11.8571,
     "state_probabilities": {
-      "P(Normal)": 0.09,
-      "P(Attack)": 0.91
+      "P(Normal)": 0.9955,
+      "P(Attack)": 0.0045
     },
     "uncertainty_metrics": {
-      "confidence_level": "HIGH",
-      "rolling_stability": 0.9,
-      "state_duration_ticks": 12,
-      "transition_risk": 0.05,
-      "observation_z_score": 2.41
+      "confidence_level": "LOW",
+      "rolling_stability": 1,
+      "state_duration_ticks": 7,
+      "transition_risk": 0.0117,
+      "observation_z_score": 0.6844
     }
   },
   "model_meta": {
     "model_status": "READY",
-    "last_trained_at": "2026-04-18T08:04:22.864233",
-    "total_points_seen": 862
+    "last_trained_at": "2026-04-19T11:35:30.357880",
+    "total_points_seen": 159
   }
 }
 ```
