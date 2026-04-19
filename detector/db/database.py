@@ -49,14 +49,19 @@ def fetch_latest_events(conn: sqlite3.Connection, limit: int = 200) -> list:
     Fetches the last `limit` events ordered by timestamp DESC.
     Used by HMM for training and prediction window.
     """
-    cursor = conn.execute("""
-        SELECT id, timestamp, value, true_state
-        FROM events
-        ORDER BY timestamp DESC
-        LIMIT ?
-    """, (limit,))
-    rows = cursor.fetchall()
-    return list(reversed(rows))
+    try:
+        cursor = conn.execute("""
+            SELECT id, timestamp, value, true_state
+            FROM events
+            ORDER BY timestamp DESC
+            LIMIT ?
+        """, (limit,))
+        rows = cursor.fetchall()
+        cursor.close()
+        return list(reversed(rows))
+    except sqlite3.OperationalError as e:
+        print(f"[DB] fetch_latest_events error: {e}")
+        return []
 
 def fetch_event_count(conn: sqlite3.Connection) -> int:
     """
@@ -65,7 +70,9 @@ def fetch_event_count(conn: sqlite3.Connection) -> int:
     """
     try:
         cursor = conn.execute("SELECT COUNT(*) FROM events")
-        return cursor.fetchone()[0]
+        count = cursor.fetchone()[0]
+        cursor.close()
+        return count
     except sqlite3.OperationalError:
         return 0
 
@@ -81,6 +88,7 @@ def fetch_model_status(conn: sqlite3.Connection) -> Optional[dict]:
             WHERE id = 1
         """)
         row = cursor.fetchone()
+        cursor.close()
         return dict(row) if row else None
     except sqlite3.OperationalError:
         return None
@@ -137,7 +145,9 @@ def fetch_detection_history(conn: sqlite3.Connection, limit: int = 50) -> list:
             ORDER BY timestamp DESC
             LIMIT ?
         """, (limit,))
-        return [dict(row) for row in cursor.fetchall()]
+        rows = [dict(row) for row in cursor.fetchall()]
+        cursor.close()
+        return rows
     except sqlite3.OperationalError:
         return []
 
@@ -157,6 +167,7 @@ def fetch_validation_metrics(conn: sqlite3.Connection) -> Optional[dict]:
             AND d.predicted_state IS NOT NULL
         """)
         rows = cursor.fetchall()
+        cursor.close()
 
         if not rows or len(rows) < 10:
             return None

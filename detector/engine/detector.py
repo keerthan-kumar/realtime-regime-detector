@@ -1,6 +1,8 @@
 import time
 import threading
 import numpy as np
+import sqlite3
+import os
 from datetime import datetime
 from typing import Optional
 
@@ -8,7 +10,8 @@ from db.database import (
     fetch_latest_events,
     fetch_event_count,
     fetch_model_status,
-    insert_detection
+    insert_detection,
+    get_connection
 )
 from engine.hmm_model import detector, WARMUP_POINTS, RETRAIN_EVERY
 
@@ -21,24 +24,25 @@ _latest_result: Optional[dict] = None
 _latest_result_lock = threading.Lock()
 
 def get_latest_result() -> Optional[dict]:
-    """Thread-safe read of latest detection result."""
     with _latest_result_lock:
         return _latest_result
 
 def _set_latest_result(result: dict):
-    """Thread-safe write of latest detection result."""
     global _latest_result
     with _latest_result_lock:
         _latest_result = result
 
 # ─── Background Detection Loop ────────────────────────────────
-def _detection_loop(conn):
+def _detection_loop():
     """
     Runs forever in a background thread.
-    Only runs inference when a genuinely new event has arrived.
-    Prevents overlapping windows and duplicate detections.
+    Uses its OWN dedicated SQLite connection — never shares
+    with the API thread. This eliminates all locking conflicts.
     """
     print("[DETECTOR] Background detection loop started.")
+
+    # Own dedicated connection for this thread
+    conn = get_connection()
 
     fitted_once       = False
     last_retrain_at   = 0
@@ -87,12 +91,11 @@ def _detection_loop(conn):
 
             latest_id = rows[-1]["id"]
 
-            # ── Skip if no new event since last prediction ────
+            # ── Skip if no new event ──────────────────────────
             if latest_id == last_processed_id:
                 time.sleep(POLL_INTERVAL)
                 continue
 
-            # ── New data confirmed — update cursor ────────────
             last_processed_id = latest_id
             values = [row["value"] for row in rows]
 
@@ -121,7 +124,7 @@ def _detection_loop(conn):
 
             result["timestamp"] = datetime.utcnow().isoformat()
 
-            # ── Store result with event_id ────────────────────
+            # ── Store result ──────────────────────────────────
             insert_detection(
                 conn              = conn,
                 event_id          = latest_id,
@@ -137,7 +140,6 @@ def _detection_loop(conn):
                 z_score           = result["uncertainty_metrics"]["observation_z_score"]
             )
 
-            # ── Update shared state for API ───────────────────
             _set_latest_result(result)
 
             print(
@@ -156,10 +158,13 @@ def _detection_loop(conn):
 
 # ─── Startup ──────────────────────────────────────────────────
 def start_detection_loop(conn):
-    """Called once at FastAPI startup. Spawns background thread."""
+    """
+    Called once at FastAPI startup.
+    Note: conn parameter kept for API compatibility
+    but detection loop uses its own dedicated connection.
+    """
     t = threading.Thread(
         target=_detection_loop,
-        args=(conn,),
         daemon=True
     )
     t.start()
