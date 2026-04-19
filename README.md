@@ -27,7 +27,7 @@ from the live stream itself during a warm-up phase — eliminating any
 distribution mismatch from pre-trained weights.
 
 Unlike threshold-based approaches, HMM explicitly models the **sequential
-dependency** between observations — a key property of real security event
+dependency** between observations — a key property of a real security event
 streams where attacks persist over multiple ticks rather than appearing
 as isolated spikes.
 ---
